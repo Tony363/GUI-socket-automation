@@ -3,8 +3,16 @@ import socket
 import types
 import sys
 import selectors
+from tkinter import *
 
 used = list()
+
+def GUI():
+    root = Tk()
+    root.geometry("200x200")
+    root.title("counts")
+    sign = Label(root,text=used[-1]).pack()
+    root.mainloop()
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
@@ -28,6 +36,7 @@ def service_connection(key, mask):
                 sock.close()
         except ConnectionResetError:
             print(used)
+            GUI()
             pass
         
     if mask & selectors.EVENT_WRITE:
@@ -40,6 +49,7 @@ def service_connection(key, mask):
             sent = sock.send(data.outb)  # Should be ready to write
             used.append(data.outb)
             data.outb = data.outb[sent:]
+            
         
 
 
