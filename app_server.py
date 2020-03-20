@@ -4,7 +4,7 @@ import types
 import sys
 import selectors
 
-# used = list()
+used = list()
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
@@ -18,18 +18,29 @@ def service_connection(key, mask):
     sock = key.fileobj
     data = key.data
     if mask & selectors.EVENT_READ:
-        recv_data = sock.recv(1024)  # Should be ready to read
-        if recv_data:
-            data.outb += recv_data
-        else:
-            print('closing connection to', data.addr)
-            sel.unregister(sock)
-            sock.close()
+        try:
+            recv_data = sock.recv(1024)  # Should be ready to read
+            if recv_data:
+                data.outb += recv_data
+            else:
+                print('closing connection to', data.addr)
+                sel.unregister(sock)
+                sock.close()
+        except ConnectionResetError:
+            print(used)
+            pass
+        
     if mask & selectors.EVENT_WRITE:
         if data.outb:
+            if data.outb in used:
+                print('number used')
+                sent = sock.send(bytes('number used ',encoding='utf8'))
+            
             print('echoing', repr(data.outb), 'to', data.addr)
             sent = sock.send(data.outb)  # Should be ready to write
+            used.append(data.outb)
             data.outb = data.outb[sent:]
+        
 
 
 

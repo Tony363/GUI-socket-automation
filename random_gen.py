@@ -51,19 +51,14 @@ def service_connection(key, mask):
 
 def nClick():
     global counter
-    counter += 1
-            
+    counter += 1      
     if counter > 100000:
         stop = Label(text="exceeded 5 digits").pack()
         time.sleep(1)
-        sys.exit()
-        
+        sys.exit()    
     events = sel.select(timeout=None)
-   
     for key,mask in events:
-        # print(messages)
-        service_connection(key,mask)
-        
+        service_connection(key,mask)   
     mButton1.config(text = counter)
 
 
@@ -76,11 +71,10 @@ root.title("My Button Increaser")
 
 messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)]
 sel = selectors.DefaultSelector()
-start_connections('',8000,2)
+start_connections('',8000,1)
 
 mButton1 = Button(text = counter, command = nClick, fg = "darkgreen", bg = "white")
 mButton1.pack()
-
 root.mainloop()
 
 
