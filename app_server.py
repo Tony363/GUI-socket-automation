@@ -57,6 +57,8 @@ def service_connection(key, mask):
 
 sel = selectors.DefaultSelector()
 lsock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 lsock.bind(('',8000))
 lsock.listen()
 print('listening on',('',8000))
