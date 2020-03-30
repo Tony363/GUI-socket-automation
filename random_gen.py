@@ -5,12 +5,13 @@ import types
 import random
 import time
 import json
+import requests
 from tkinter import *
 
 def service_connection(key, mask,sel,messages):
     sock = key.fileobj
     data = key.data
-    # print(next(data.outb))
+    # print(data)
     if mask & selectors.EVENT_READ:
         recv_data = sock.recv(1024)  # Should be ready to read
 
@@ -19,26 +20,26 @@ def service_connection(key, mask,sel,messages):
             print('FUCKq!')
 
         if recv_data:
-            print('received', repr(recv_data), 'from connection', data.connid)
+            print('received', repr(recv_data), 'from connection', data)
             data.recv_total += len(recv_data)
         if not recv_data or data.recv_total == data.msg_total:
-            print('closing connection', data.connid)
+            print('closing connection', data)
             sel.unregister(sock)
             sock.close()
             sys.exit()
 
     if mask & selectors.EVENT_WRITE:
-        if not data.outb and data.messages:
-            data.outb = data.messages.pop(0)
-            print(data.outb)
-        if data.outb:
-            print('sending', repr(data.outb), 'to connection', data.connid)
-            sent = sock.send(data.outb)  # Should be ready to write
-            data.outb = data.outb[sent:]
+        if not data and data.messages:
+            data = data.messages.pop(0)
+            # print(data.outb)
+        if data:
+            print('sending', repr(data), 'to connection', data)
+            sent = sock.send(data)  # Should be ready to write
+            # data.outb = data.outb[sent:]
 
 
-def start_connections(host, port, num_conns,sel,messages,bytes_dic):
-    print(type(messages),type(bytes_dic))
+def start_connections(host, port, num_conns,sel,messages):
+    print(type(messages))
     server_addr = (host, port)
     for i in range(0, num_conns):
         connid = i + 1
@@ -47,12 +48,13 @@ def start_connections(host, port, num_conns,sel,messages,bytes_dic):
         sock.setblocking(False)
         sock.connect_ex(server_addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        data = types.SimpleNamespace(connid=connid,
-                                    msg_total=sum(len(m) for m in messages),
-                                    recv_total=0,
-                                    messages=iter(messages),
-                                    outb=b'')
-        sel.register(sock, events, data=data)
+        # data = types.SimpleNamespace(connid=connid,
+        #                             msg_total=sum(len(m) for m in messages),
+        #                             recv_total=0,
+        #                             messages=iter(messages),
+        #                             outb=b'')
+        data1 = json.dumps(messages).encode('utf-8')
+        sel.register(sock, events, data=data1)
 
 
 
@@ -61,17 +63,13 @@ class GUI(Frame):
         Frame.__init__(self,master)
         
         self.grid()
-        self.data = {}
-        self.bytes_dic = json.dumps(self.data).encode('utf-8')
-
         self.counter = 1000
+    
+        # self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
+        self.messages = {i:dict() for i in range(1000,100000)}
 
-        # ##!!!!!!!!!!!!!!!!!
-        # self.messages = [bytes(f'{i}:{dic}',encoding='utf8') for i,dic in zip(range(1000,100000),self.bytes_dic)]
-        self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
-        
         self.sel = selectors.DefaultSelector()
-        start_connections('',8000,1,self.sel,self.messages,self.bytes_dic)
+        start_connections('',8000,1,self.sel,self.messages)
         
 
         self.label1 = Label(master,text='label1')
@@ -95,24 +93,28 @@ class GUI(Frame):
         self.submit = Button(text = f'Submit {self.counter}', command = self.nClick, fg = "black", bg = "white")
         self.submit.grid()
 
-    def change(self,Frame):
-        Frame.pack_forget()
     def get_entry1(self):
-        self.data['label1'] = self.Entry1.get()
-        print(self.data)
+        self.messages[self.counter]['label1'] = self.Entry1.get()
+        print(self.messages)
 
     def get_entry2(self):
-        self.data['label2'] = self.Entry2.get()
-        print(self.data)
+        self.messages[self.counter]['label2'] = self.Entry2.get()
+        print(self.messages)
 
     def get_entry3(self):
-        self.data['label3'] = self.Entry3.get()
-        print(new_data)
+        self.messages[self.counter]['label3'] = self.Entry3.get()
+ 
 
     def get_entry4(self):
-        self.data['label4'] = self.Entry4.get()
-        print(self.data)
+        self.messages[self.counter]['label4'] = self.Entry4.get()
+        
     
+    # def send_web(self):
+    #     r = requests.post(url,data={self.counter:self.bytes_dic})
+        
+
+        
+
     def nClick(self):
         self.counter += 1   
         
@@ -128,9 +130,6 @@ class GUI(Frame):
 
     def return_messages(self):
         return self.messages
-
-
- 
 
 
 if __name__ == "__main__":
