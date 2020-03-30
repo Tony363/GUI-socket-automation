@@ -50,7 +50,7 @@ def start_connections(host, port, num_conns,sel,messages,bytes_dic):
         data = types.SimpleNamespace(connid=connid,
                                     msg_total=sum(len(m) for m in messages),
                                     recv_total=0,
-                                    messages=messages,
+                                    messages=iter(messages),
                                     outb=b'')
         sel.register(sock, events, data=data)
 
@@ -66,8 +66,9 @@ class GUI(Frame):
 
         self.counter = 1000
 
-        ##!!!!!!!!!!!!!!!!!
-        self.messages = [bytes(f'{i}',encoding='utf8') for i in zip(range(1000,100000),self.bytes_dic)]
+        # ##!!!!!!!!!!!!!!!!!
+        # self.messages = [bytes(f'{i}:{dic}',encoding='utf8') for i,dic in zip(range(1000,100000),self.bytes_dic)]
+        self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
         
         self.sel = selectors.DefaultSelector()
         start_connections('',8000,1,self.sel,self.messages,self.bytes_dic)
@@ -128,9 +129,6 @@ class GUI(Frame):
     def return_messages(self):
         return self.messages
 
-# class newGUI(Frame):
-#     def __init__(self,parent,controller):
-#         Frame.__init__(self,parent)
 
  
 
