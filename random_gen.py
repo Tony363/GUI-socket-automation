@@ -8,7 +8,7 @@ import json
 import requests
 from tkinter import *
 
-def service_connection(key, mask,sel,messages):
+def service_connection(key, mask,sel,messages,counter):
     sock = key.fileobj
     data = key.data
     # print(data)
@@ -16,13 +16,13 @@ def service_connection(key, mask,sel,messages):
         recv_data = sock.recv(1024)  # Should be ready to read
 
         if 'number used' in str(repr(recv_data)):
-            guiFrame.messages = guiFrame.messages[1:]
+            guiFrame.messages = guiFrame.messages.pop('')
             print('FUCKq!')
 
         if recv_data:
             print('received', repr(recv_data), 'from connection', data)
-            data.recv_total += len(recv_data)
-        if not recv_data or data.recv_total == data.msg_total:
+            # data += len(recv_data)
+        if not recv_data or data == data.msg_total:
             print('closing connection', data)
             sel.unregister(sock)
             sock.close()
@@ -64,12 +64,12 @@ class GUI(Frame):
         
         self.grid()
         self.counter = 1000
-    
+        self.data = {}
         # self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
         self.messages = {i:dict() for i in range(1000,100000)}
 
         self.sel = selectors.DefaultSelector()
-        start_connections('',8000,1,self.sel,self.messages)
+        # start_connections('',8000,1,self.sel,self.messages)
         
 
         self.label1 = Label(master,text='label1')
@@ -90,30 +90,30 @@ class GUI(Frame):
         self.button2 = Button(master,height=1,width=10,text='Enter',command=self.get_entry2)
         self.button2.grid()
 
-        self.submit = Button(text = f'Submit {self.counter}', command = self.nClick, fg = "black", bg = "white")
+        self.submit = Button(text = f'Submit {self.counter}', command = self.send_data, fg = "black", bg = "white")
         self.submit.grid()
 
     def get_entry1(self):
         self.messages[self.counter]['label1'] = self.Entry1.get()
-        print(self.messages)
+        self.data['label1'] = self.Entry1.get()
+        # print(self.messages)
+        print(self.data)
 
     def get_entry2(self):
         self.messages[self.counter]['label2'] = self.Entry2.get()
-        print(self.messages)
+        self.data['label2'] = self.Entry2.get()
+        # print(self.messages)
+        print(self.data)
 
     def get_entry3(self):
         self.messages[self.counter]['label3'] = self.Entry3.get()
+        self.data[self.counter] = self.Entry3.get()
  
 
     def get_entry4(self):
         self.messages[self.counter]['label4'] = self.Entry4.get()
-        
-    
-    # def send_web(self):
-    #     r = requests.post(url,data={self.counter:self.bytes_dic})
-        
-
-        
+        self.data[self.counter] = self.Entry4.get()
+               
 
     def nClick(self):
         self.counter += 1   
@@ -125,12 +125,23 @@ class GUI(Frame):
         # start_connections('',8000,1,self.sel,self.messages)
         self.events = self.sel.select(timeout=None)
         for key,mask in self.events:
-            service_connection(key,mask,self.sel,self.messages)   
+            service_connection(key,mask,self.sel,self.messages,self.counter)   
         self.submit.config(text = f'Submit {self.counter}')
 
     def return_messages(self):
         return self.messages
 
+    def send_data(self):
+        if self.counter > 100000:
+            stop = Label(text="exceeded 5 digits").pack()
+            time.sleep(1)
+            sys.exit() 
+
+        data = json.dumps(self.data)
+        loaded_data = json.loads(data)
+        print(loaded_data)
+        url = r'http://localhost:8000/simple_data/'
+        r = requests.post(url,files=json.loads(json.dumps({'name':'wtf'})))
 
 if __name__ == "__main__":
     # messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)]  

@@ -43,7 +43,7 @@ def service_connection(key, mask):
         if data.outb:
             if data.outb in used:
                 print('number used')
-                sent = sock.send(bytes('number used ',encoding='utf8'))
+                sent = sock.send(bytes(f'{data.outb} number used',encoding='utf8'))
             
             print('echoing', repr(data.outb), 'to', data.addr)
             sent = sock.send(data.outb)  # Should be ready to write
