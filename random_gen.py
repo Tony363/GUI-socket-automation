@@ -7,6 +7,7 @@ import time
 import json
 import requests
 from tkinter import *
+from tkinter.messagebox import showinfo
 
 def service_connection(key, mask,sel,messages,counter):
     sock = key.fileobj
@@ -64,7 +65,7 @@ class GUI(Frame):
         
         self.grid()
         self.counter = 1000
-        self.data = {}
+        self.data = {'number':[],'label1':[],'label2':[]}
         # self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
         self.messages = {i:dict() for i in range(1000,100000)}
 
@@ -95,13 +96,13 @@ class GUI(Frame):
 
     def get_entry1(self):
         self.messages[self.counter]['label1'] = self.Entry1.get()
-        self.data['label1'] = self.Entry1.get()
+        self.data['label1'].append(self.Entry1.get())
         # print(self.messages)
         print(self.data)
 
     def get_entry2(self):
         self.messages[self.counter]['label2'] = self.Entry2.get()
-        self.data['label2'] = self.Entry2.get()
+        self.data['label2'].append(self.Entry2.get())
         # print(self.messages)
         print(self.data)
 
@@ -132,22 +133,30 @@ class GUI(Frame):
         return self.messages
 
     def send_data(self):
+        self.counter += 1
+        self.data['number'].append(self.counter)
+        print(self.data)
+        
         if self.counter > 100000:
             stop = Label(text="exceeded 5 digits").pack()
             time.sleep(1)
             sys.exit() 
+        
+        url = f'http://localhost:8000/data/'
+        r = requests.post(url,json=self.data)
+        print(r.text)
+        print(r.status_code)
+        if r.status_code == 404:
+            showinfo('Repeating','data already processed') 
+            # self.counter += 1
 
-        data = json.dumps(self.data)
-        loaded_data = json.loads(data)
-        print(loaded_data)
-        url = r'http://localhost:8000/simple_data/'
-        r = requests.post(url,files=json.loads(json.dumps({'name':'wtf'})))
+        self.submit.config(text = f'Submit {self.counter}')
 
 if __name__ == "__main__":
     # messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)]  
     guiFrame = GUI()   
     guiFrame.mainloop()
-   
+    
    
 
 
