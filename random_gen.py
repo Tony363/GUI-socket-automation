@@ -6,6 +6,9 @@ import random
 import time
 import json
 import requests
+import mimetypes
+import os
+import pandas as pd
 from tkinter import *
 from tkinter.messagebox import showinfo
 
@@ -91,19 +94,23 @@ class GUI(Frame):
         self.button2 = Button(master,height=1,width=10,text='Enter',command=self.get_entry2)
         self.button2.grid()
 
-        self.submit = Button(text = f'Submit {self.counter}', command = self.send_data, fg = "black", bg = "white")
+        self.submit = Button(text = f'Submit {self.counter}', command = self.send_data )
         self.submit.grid()
+
+        self.download_csv = Button(text = 'Download', command = self.download)
+        self.download_csv.grid()
+
 
     def get_entry1(self):
         self.messages[self.counter]['label1'] = self.Entry1.get()
         self.data['label1'].append(self.Entry1.get())
-        # print(self.messages)
+        
         print(self.data)
 
     def get_entry2(self):
         self.messages[self.counter]['label2'] = self.Entry2.get()
         self.data['label2'].append(self.Entry2.get())
-        # print(self.messages)
+        
         print(self.data)
 
     def get_entry3(self):
@@ -142,21 +149,35 @@ class GUI(Frame):
             time.sleep(1)
             sys.exit() 
         
-        url = f'http://localhost:8000/data/'
+        url = 'http://127.0.0.1/data/'
         r = requests.post(url,json=self.data)
         print(r.text)
         print(r.status_code)
         if r.status_code == 404:
             showinfo('Repeating','data already processed') 
-            # self.counter += 1
 
         self.submit.config(text = f'Submit {self.counter}')
+    
+    def download(self):
+        url = 'http://127.0.0.1/feed_data/'
+        r = requests.post(url)
+        data = dict(r.json())
+        df = pd.DataFrame(data)
+      
+        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
+        df.to_csv(desktop + '/your_data.csv')
+        # content_type = mimetypes.guess_type(df)[0]
+        # wrapper = FileWrapper(open(df))
+
+
+
+    
 
 if __name__ == "__main__":
     # messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)]  
     guiFrame = GUI()   
     guiFrame.mainloop()
-    
+        
    
 
 
