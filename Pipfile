@@ -6,10 +6,6 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-tkinter = "*"
-python-tk = "*"
-requests = "*"
-pandas = "*"
 
 [requires]
 python_version = "3.6"

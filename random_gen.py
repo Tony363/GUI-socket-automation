@@ -149,9 +149,10 @@ class GUI(Frame):
             time.sleep(1)
             sys.exit() 
         
-        url = 'http://127.0.0.1/data/'
+        # url = 'http://34.84.220.35/data/'
+        url = 'http://127.0.0.1:8000/data/'
         r = requests.post(url,json=self.data)
-        print(r.text)
+        print(r.content)
         print(r.status_code)
         if r.status_code == 404:
             showinfo('Repeating','data already processed') 
@@ -159,7 +160,8 @@ class GUI(Frame):
         self.submit.config(text = f'Submit {self.counter}')
     
     def download(self):
-        url = 'http://127.0.0.1/feed_data/'
+        # url = 'http://34.84.220.35/feed_data/'
+        url = 'http://127.0.0.1:8000/feed_data'
         r = requests.post(url)
         data = dict(r.json())
         df = pd.DataFrame(data)
@@ -173,10 +175,8 @@ class GUI(Frame):
 
     
 
-if __name__ == "__main__":
-    # messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)]  
-    guiFrame = GUI()   
-    guiFrame.mainloop()
+guiFrame = GUI()   
+guiFrame.mainloop()
         
    
 
