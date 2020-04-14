@@ -154,18 +154,20 @@ class GUI(Frame):
             showinfo('Repeating','data already processed') 
 
         self.submit.config(text = f'Submit {self.counter}')
+        self.data['number'].pop(0)
+        self.data['label1'].pop(0)
+        self.data['label2'].pop(0)
     
     def download(self):
         # url = 'http://34.84.220.35/feed_data/'
         url = 'http://127.0.0.1:8000/feed_data'
         r = requests.post(url)
         data = dict(r.json())
-        df = pd.DataFrame(data)
+        print(data['data so far'])
+        df = pd.DataFrame(data['data so far'])
       
         desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
         df.to_csv(desktop + '/your_data.csv')
-        # content_type = mimetypes.guess_type(df)[0]
-        # wrapper = FileWrapper(open(df))
  
 
 guiFrame = GUI()   
