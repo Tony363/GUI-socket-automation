@@ -11,6 +11,7 @@ import os
 import pandas as pd
 from tkinter import *
 from tkinter.messagebox import showinfo
+from itertools import cycle
 
 def service_connection(key, mask,sel,messages,counter):
     sock = key.fileobj
@@ -73,8 +74,7 @@ class GUI(Frame):
         self.messages = {i:dict() for i in range(1000,100000)}
 
         self.sel = selectors.DefaultSelector()
-        # start_connections('',8000,1,self.sel,self.messages)
-        
+        # start_connections('',8000,1,self.sel,self.messages)        
 
         self.label1 = Label(master,text='label1')
         self.label1.grid()
@@ -82,17 +82,11 @@ class GUI(Frame):
         self.Entry1 = Entry(master)
         self.Entry1.grid()
 
-        self.button1 = Button(master,height=1,width=10,text='Enter',command=self.get_entry1)
-        self.button1.grid()
-
         self.label2 = Label(master,text='label2')
         self.label2.grid()
 
         self.Entry2 = Entry(master)
         self.Entry2.grid()
-
-        self.button2 = Button(master,height=1,width=10,text='Enter',command=self.get_entry2)
-        self.button2.grid()
 
         self.submit = Button(text = f'Submit {self.counter}', command = self.send_data )
         self.submit.grid()
@@ -142,13 +136,15 @@ class GUI(Frame):
     def send_data(self):
         self.counter += 1
         self.data['number'].append(self.counter)
+        self.data['label1'].append(self.Entry1.get())
+        self.data['label2'].append(self.Entry2.get())
         print(self.data)
-        
+  
         if self.counter > 100000:
             stop = Label(text="exceeded 5 digits").pack()
             time.sleep(1)
             sys.exit() 
-        
+            
         # url = 'http://34.84.220.35/data/'
         url = 'http://127.0.0.1:8000/data/'
         r = requests.post(url,json=self.data)
@@ -170,10 +166,7 @@ class GUI(Frame):
         df.to_csv(desktop + '/your_data.csv')
         # content_type = mimetypes.guess_type(df)[0]
         # wrapper = FileWrapper(open(df))
-
-
-
-    
+ 
 
 guiFrame = GUI()   
 guiFrame.mainloop()
