@@ -54,12 +54,73 @@ def start_connections(host, port, num_conns,sel,messages):
         sock.connect_ex(server_addr)
         events = selectors.EVENT_READ | selectors.EVENT_WRITE
         # data = types.SimpleNamespace(connid=connid,
-        #                             msg_total=sum(len(m) for m in messages),
+        #                        # self.Entry1 = Entry(master)
+        # self.Entry1.grid()      msg_total=sum(len(m) for m in messages),
         #                             recv_total=0,
         #                             messages=iter(messages),
         #                             outb=b'')
         data1 = json.dumps(messages).encode('utf-8')
         sel.register(sock, events, data=data1)
+
+class editor:
+    def __init__(self,root=Tk()):
+        self.root = root
+        self.root.geometry("300x300+200+200")
+
+        self.data = {'number':[],'label1':[],'label2':[]}
+        
+        self.label_counter = Label(root,text='Count number')
+        self.label_counter.pack()
+
+        self.Entry1 = Entry(root)
+        self.Entry1.pack()
+
+        self.label2 = Label(root,text='label1')
+        self.label2.pack()
+
+        self.Entry2 = Entry(root)
+        self.Entry2.pack()
+
+        self.label3 = Label(root,text='label2')
+        self.label3.pack()
+
+        self.Entry3 = Entry(root)
+        self.Entry3.pack()
+
+        # self.label4 = Label(master,text='label3')
+        # self.label4.grid()
+
+        # self.Entry4 = Entry(master)
+        # self.Entry4.grid()
+
+        self.update = Button(root,text = 'Update Record', command = self.update_data )
+        self.update.pack()
+
+        self.close_window = Button(root,text = 'Close', command = self.close_window )
+        self.close_window.pack()
+
+    def update_data(self):
+        self.data['number'].append(self.Entry1.get())
+        self.data['label1'].append(self.Entry2.get())
+        self.data['label2'].append(self.Entry3.get())
+        print(self.data)
+
+        url = 'http://127.0.0.1:8000/update/'
+        r = requests.post(url,json=self.data)
+        print(r.content)
+        print(r.status_code)
+        if r.status_code == 404:
+            showinfo('Repeating','data already processed') 
+        
+        self.data['number'].pop()
+        self.data['label1'].pop()
+        self.data['label2'].pop()
+
+    def close_window(self):
+        self.root.destroy()
+
+
+
 
 
 
@@ -71,9 +132,9 @@ class GUI(Frame):
         self.counter = 1000
         self.data = {'number':[],'label1':[],'label2':[]}
         # self.messages = [bytes(f'{i}',encoding='utf8') for i in range(1000,100000)] 
-        self.messages = {i:dict() for i in range(1000,100000)}
+        # self.messages = {i:dict() for i in range(1000,100000)}
 
-        self.sel = selectors.DefaultSelector()
+        # self.sel = selectors.DefaultSelector()
         # start_connections('',8000,1,self.sel,self.messages)        
 
         self.label1 = Label(master,text='label1')
@@ -94,6 +155,13 @@ class GUI(Frame):
         self.download_csv = Button(text = 'Download', command = self.download)
         self.download_csv.grid()
 
+        self.edit = Button(text = 'edit', command = lambda: self.edit_records(editor) )
+        self.edit.grid()
+
+    def edit_records(self,_class):
+        self.edit = Toplevel()
+        _class(self.edit)
+
 
     def get_entry1(self):
         self.messages[self.counter]['label1'] = self.Entry1.get()
@@ -106,15 +174,6 @@ class GUI(Frame):
         self.data['label2'].append(self.Entry2.get())
         
         print(self.data)
-
-    def get_entry3(self):
-        self.messages[self.counter]['label3'] = self.Entry3.get()
-        self.data[self.counter] = self.Entry3.get()
- 
-
-    def get_entry4(self):
-        self.messages[self.counter]['label4'] = self.Entry4.get()
-        self.data[self.counter] = self.Entry4.get()
                
 
     def nClick(self):
@@ -153,6 +212,7 @@ class GUI(Frame):
         if r.status_code == 404:
             showinfo('Repeating','data already processed') 
 
+        self.counter += 1
         self.submit.config(text = f'Submit {self.counter}')
         self.data['number'].pop(0)
         self.data['label1'].pop(0)
