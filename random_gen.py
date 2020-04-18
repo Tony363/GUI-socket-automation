@@ -4,8 +4,11 @@ import time
 import json
 import requests
 import csv
+import os
 from tkinter import *
 from tkinter.messagebox import showinfo
+from tkinter import messagebox
+
 
 class deleter:
     def __init__(self,root):
@@ -23,10 +26,18 @@ class deleter:
         self.delete_button.pack()
 
     def delete(self):
+        if len(self.delete_prompt.get()) == 0:
+            question = messagebox.showwarning('please enter number')
+            return None
+            
         self.data['number'].append(self.delete_prompt.get())
         # url = 'http://104.197.53.135/delete/'
-        url = 'http://127.0.0.1:8000/data/'
-        r = requests.post(url,json=self.data)
+        url = 'http://127.0.0.1:8000/delete/'
+        try:
+            r = requests.post(url,json=self.data)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
+            print('server connection failure')
+            sys.exit()
         print(r.content)
         print(r.status_code)
         if r.status_code == 404:
@@ -68,18 +79,29 @@ class editor:
         self.close_window.pack()
 
     def update_data(self):
-        self.data['number'].append(self.Entry1.get())
+        if len(self.Entry1.get()) == 0:
+            question = messagebox.showwarning('please enter number')
+            return None
+        
+
+        self.data['number'].append(int(self.Entry1.get()))
         self.data['label1'].append(self.Entry2.get())
         self.data['label2'].append(self.Entry3.get())
         print(self.data)
 
         # url = 'http://104.197.53.135/update/'
-        url = 'http://127.0.0.1:8000/data/'
-        r = requests.post(url,json=self.data)
+        url = 'http://127.0.0.1:8000/update/'
+        # url = 'http://127.0.0.1:8000/data/'
+        try:
+            r = requests.post(url,json=self.data)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
+            print('server connection failure')
+            sys.exit()
+
         print(r.content)
         print(r.status_code)
         if r.status_code == 404:
-            showinfo('Repeating','data already processed') 
+            showinfo('not there','data not yet entered') 
         
         self.data['number'].pop()
         self.data['label1'].pop()
@@ -136,19 +158,6 @@ class GUI:
         _class(self.edit)
                
 
-    def nClick(self):
-        self.counter += 1   
-        
-        if self.counter > 100000:
-            stop = Label(text="exceeded 5 digits").pack()
-            time.sleep(1)
-            sys.exit()    
-        # start_connections('',8000,1,self.sel,self.messages)
-        self.events = self.sel.select(timeout=None)
-        for key,mask in self.events:
-            service_connection(key,mask,self.sel,self.messages,self.counter)   
-        self.submit.config(text = f'Submit {self.counter}')
-
     def return_messages(self):
         return self.messages
 
@@ -165,7 +174,11 @@ class GUI:
             
         # url = 'http://104.197.53.135/data/'
         url = 'http://127.0.0.1:8000/data/'
-        r = requests.post(url,json=self.data)
+        try:
+            r = requests.post(url,json=self.data)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
+            print('server connection failure')
+            sys.exit()
         print(r.content)
         print(r.status_code)
         if r.status_code == 404:
@@ -182,23 +195,22 @@ class GUI:
         url = 'http://127.0.0.1:8000/feed_data'
         r = requests.post(url)
         data = dict(r.json())['data so far']
-        
         array = [i for i in data.values()]
-        print(array)
-        with open('mycsv.csv','w') as f:
-            
-            w = csv.writer(f)
-            w.writerows(array)
-           
+        desktop = os.path.normpath(os.path.expanduser("~/Desktop"))
 
- 
-# if __name__ == "__main__":
-root = Tk()
-root.geometry("200x200")
-root.title("My Button Increaser")
-app = GUI(root)
-app.root.title('csv automation')
-root.mainloop()
+       
+        with open( desktop +'/mycsv.csv','w') as f:
+            w = csv.writer(f)
+            for number,label1,label2 in zip(array[0],array[1],array[2]):
+                w.writerow([number,label1,label2])
+                
+if __name__ == "__main__":
+    root = Tk()
+    root.geometry("200x200")
+    root.title("My Button Increaser")
+    app = GUI(root)
+    app.root.title('csv automation')
+    root.mainloop()
     
 
         
