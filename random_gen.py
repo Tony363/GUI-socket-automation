@@ -1,66 +1,11 @@
 import sys
-import socket
-import selectors
-import types
 import random
 import time
 import json
 import requests
-import mimetypes
-import os
-import pandas as pd
+import csv
 from tkinter import *
 from tkinter.messagebox import showinfo
-from itertools import cycle
-
-def service_connection(key, mask,sel,messages,counter):
-    sock = key.fileobj
-    data = key.data
-    # print(data)
-    if mask & selectors.EVENT_READ:
-        recv_data = sock.recv(1024)  # Should be ready to read
-
-        if 'number used' in str(repr(recv_data)):
-            guiFrame.messages = guiFrame.messages.pop('')
-            print('FUCKq!')
-
-        if recv_data:
-            print('received', repr(recv_data), 'from connection', data)
-            # data += len(recv_data)
-        if not recv_data or data == data.msg_total:
-            print('closing connection', data)
-            sel.unregister(sock)
-            sock.close()
-            sys.exit()
-
-    if mask & selectors.EVENT_WRITE:
-        if not data and data.messages:
-            data = data.messages.pop(0)
-            # print(data.outb)
-        if data:
-            print('sending', repr(data), 'to connection', data)
-            sent = sock.send(data)  # Should be ready to write
-            # data.outb = data.outb[sent:]
-
-
-def start_connections(host, port, num_conns,sel,messages):
-    print(type(messages))
-    server_addr = (host, port)
-    for i in range(0, num_conns):
-        connid = i + 1
-        print('starting connection', connid, 'to', server_addr)
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.setblocking(False)
-        sock.connect_ex(server_addr)
-        events = selectors.EVENT_READ | selectors.EVENT_WRITE
-        # data = types.SimpleNamespace(connid=connid,
-        #                        # self.Entry1 = Entry(master)
-        # self.Entry1.grid()      msg_total=sum(len(m) for m in messages),
-        #                             recv_total=0,
-        #                             messages=iter(messages),
-        #                             outb=b'')
-        data1 = json.dumps(messages).encode('utf-8')
-        sel.register(sock, events, data=data1)
 
 class deleter:
     def __init__(self,root):
@@ -79,7 +24,8 @@ class deleter:
 
     def delete(self):
         self.data['number'].append(self.delete_prompt.get())
-        url = 'http://146.148.79.188/delete/'
+        # url = 'http://104.197.53.135/delete/'
+        url = 'http://127.0.0.1:8000/data/'
         r = requests.post(url,json=self.data)
         print(r.content)
         print(r.status_code)
@@ -127,7 +73,8 @@ class editor:
         self.data['label2'].append(self.Entry3.get())
         print(self.data)
 
-        url = 'http://146.148.79.188/update/'
+        # url = 'http://104.197.53.135/update/'
+        url = 'http://127.0.0.1:8000/data/'
         r = requests.post(url,json=self.data)
         print(r.content)
         print(r.status_code)
@@ -216,8 +163,8 @@ class GUI:
             time.sleep(1)
             sys.exit() 
             
-        url = 'http://146.148.79.188/data/'
-        # url = 'http://127.0.0.1:8000/data/'
+        # url = 'http://104.197.53.135/data/'
+        url = 'http://127.0.0.1:8000/data/'
         r = requests.post(url,json=self.data)
         print(r.content)
         print(r.status_code)
@@ -231,22 +178,28 @@ class GUI:
         self.data['label2'].pop(0)
     
     def download(self):
-        url = 'http://146.148.79.188/feed_data/'
-        # url = 'http://127.0.0.1:8000/feed_data'
+        # url = 'http://104.197.53.135/feed_data/'
+        url = 'http://127.0.0.1:8000/feed_data'
         r = requests.post(url)
-        data = dict(r.json())
-        print(data['data so far'])
-        df = pd.DataFrame(data['data so far'])
-      
-        desktop = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop') 
-        df.to_csv(desktop + '/your_data.csv')
+        data = dict(r.json())['data so far']
+        
+        array = [i for i in data.values()]
+        print(array)
+        with open('mycsv.csv','w') as f:
+            
+            w = csv.writer(f)
+            w.writerows(array)
+           
+
  
-if __name__ == "__main__":
-    root = Tk()
-    app = GUI(root)
-    app.root.title('csv automation')
-    root.mainloop()
-      
+# if __name__ == "__main__":
+root = Tk()
+root.geometry("200x200")
+root.title("My Button Increaser")
+app = GUI(root)
+app.root.title('csv automation')
+root.mainloop()
+    
 
         
    
