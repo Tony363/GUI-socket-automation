@@ -31,8 +31,8 @@ class deleter:
             return None
             
         self.data['number'].append(self.delete_prompt.get())
-        # url = 'http://104.197.53.135/delete/'
-        url = 'http://127.0.0.1:8000/delete/'
+        url = 'http://35.222.247.48/delete/'
+        # url = 'http://127.0.0.1:8000/delete/'
         try:
             r = requests.post(url,json=self.data)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
@@ -89,9 +89,9 @@ class editor:
         self.data['label2'].append(self.Entry3.get())
         print(self.data)
 
-        # url = 'http://104.197.53.135/update/'
-        url = 'http://127.0.0.1:8000/update/'
-        # url = 'http://127.0.0.1:8000/data/'
+        url = 'http://35.222.247.48/update/'
+        # url = 'http://127.0.0.1:8000/update/'
+     
         try:
             r = requests.post(url,json=self.data)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
@@ -172,8 +172,8 @@ class GUI:
             time.sleep(1)
             sys.exit() 
             
-        # url = 'http://104.197.53.135/data/'
-        url = 'http://127.0.0.1:8000/data/'
+        url = 'http://35.222.247.48/data/'
+        # url = 'http://127.0.0.1:8000/data/'
         try:
             r = requests.post(url,json=self.data)
         except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as err:
@@ -191,8 +191,8 @@ class GUI:
         self.data['label2'].pop(0)
     
     def download(self):
-        # url = 'http://104.197.53.135/feed_data/'
-        url = 'http://127.0.0.1:8000/feed_data'
+        url = 'http://35.222.247.48/feed_data/'
+        # url = 'http://127.0.0.1:8000/feed_data'
         r = requests.post(url)
         data = dict(r.json())['data so far']
         array = [i for i in data.values()]
